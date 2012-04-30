@@ -56,6 +56,22 @@ public class NeuralNetwork {
 		initOutputLayer();
 		log.setLevel(Level.DEBUG);
 	}
+	
+	/**
+	 * Gets the neuron output.
+	 *
+	 * @param n the n
+	 * @param x the x
+	 * @return the neuron output
+	 */
+	private double getNeuronOutput(int n, OpticalSymbol x)
+	{
+		// Compute the new neuron output
+		double val = 0;
+		for (int j = 0; j < T_SIZE; j++)
+			val += w[n][j] * x.data[j];
+		return val;
+	}
 
 	/**
 	 * Converts a given Optical Symbol to a Display Symbol. The processing done by the output layer.
@@ -79,7 +95,12 @@ public class NeuralNetwork {
 	 */
 	public void trainNetwork(OpticalSymbol trainData[]) {
 		log.info("Training Hopfield Network on the alphabet...");
+		
+		//For every neuron 
 		for (int i = 0; i < T_SIZE; i++)
+		{
+			//Compute the output value
+			//double val=getNeuronOutput(i, trainData)
 			for (int j = 0; j < T_SIZE; j++) {
 
 				if (i != j) {
@@ -90,6 +111,7 @@ public class NeuralNetwork {
 				} else
 					w[i][j] = 0.0d;
 			}
+		}
 		log.info("Training complete.");
 	}
 
