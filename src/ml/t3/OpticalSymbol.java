@@ -5,7 +5,7 @@ public class OpticalSymbol {
 
 	public static final int SYMBOL_HEIGHT = 30;
 	public static final int SYMBOL_WIDTH = 20;
-	public char[][] data;
+	public char[] data;
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -17,7 +17,10 @@ public class OpticalSymbol {
 		for(int i=0;i<SYMBOL_HEIGHT;i++)
 		{
 			for(int j=0;j<SYMBOL_WIDTH;j++)
-				buf.append(data[i][j]);
+				if(data[i*SYMBOL_WIDTH+j]==1)
+					buf.append("1, ");
+				else
+					buf.append("0, ");
 			buf.append("\n");
 		}
 		return "Symbol ["+buf.toString()+"]";
@@ -25,7 +28,7 @@ public class OpticalSymbol {
 
 	public OpticalSymbol() {
 		super();
-		this.data = new char[SYMBOL_HEIGHT][SYMBOL_WIDTH];
+		this.data = new char[SYMBOL_HEIGHT*SYMBOL_WIDTH];
 	}
 
 }

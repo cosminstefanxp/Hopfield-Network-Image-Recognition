@@ -33,7 +33,14 @@ public class Main {
 			// Read a new chunk of symbol
 			for (int s = 0; s < SYMBOLS_PER_WORD; s++)
 				for (int j = 0; j < OpticalSymbol.SYMBOL_WIDTH; j++)
-					symbols[s].data[i][j] = line.charAt(s * OpticalSymbol.SYMBOL_WIDTH + j);
+					if (line.charAt(s * OpticalSymbol.SYMBOL_WIDTH + j) == '1')
+						symbols[s].data[i * OpticalSymbol.SYMBOL_WIDTH + j] = 1;
+					else if (line.charAt(s * OpticalSymbol.SYMBOL_WIDTH + j) == '0')
+						symbols[s].data[i * OpticalSymbol.SYMBOL_WIDTH + j] = 0;
+					else {
+						log.fatal("Illegal character in input data: " + line);
+						symbols[s].data[i * OpticalSymbol.SYMBOL_WIDTH + j] = 2;
+					}
 		}
 
 		log.debug("Symbols: " + Arrays.toString(symbols));
@@ -61,7 +68,14 @@ public class Main {
 				// Read a new line
 				String line = in.nextLine();
 				for (int j = 0; j < OpticalSymbol.SYMBOL_WIDTH; j++)
-					sy.data[i][j] = line.charAt(j);
+					if (line.charAt(j) == '1')
+						sy.data[i * OpticalSymbol.SYMBOL_WIDTH + j] = 1;
+					else if (line.charAt(j) == '0')
+						sy.data[i * OpticalSymbol.SYMBOL_WIDTH + j] = 0;
+					else {
+						log.fatal("Illegal character in input data: " + line);
+						sy.data[i * OpticalSymbol.SYMBOL_WIDTH + j] = 2;
+					}
 			}
 
 			symbols[s] = sy;
@@ -80,12 +94,14 @@ public class Main {
 		PatternLayout patternLayout = new PatternLayout("%-3r [%-5p] %c - %m%n");
 		ConsoleAppender appender = new ConsoleAppender(patternLayout);
 		Logger.getRootLogger().addAppender(appender);
-		Logger.getRootLogger().setLevel(Level.DEBUG);
+		Logger.getRootLogger().setLevel(Level.INFO);
 	}
 
 	public static void main(String args[]) throws FileNotFoundException {
 		configureLogger();
 		Main main = new Main();
+		OpticalSymbol input[];
+		OpticalSymbol alphabet[];
 
 		if (args.length > 2) {
 			log.fatal("Illegal number of parameters: <executable> <input> <config>");
@@ -94,16 +110,25 @@ public class Main {
 
 		// Read the configuration file
 		if (args.length >= 2) {
-			main.readConfigFile(args[1]);
+			alphabet=main.readConfigFile(args[1]);
 		} else {
-			main.readConfigFile("config.txt");
+			alphabet=main.readConfigFile("config.txt");
 		}
 
 		// Read the input file
 		if (args.length >= 1) {
-			main.readInputFile(args[0]);
+			input=main.readInputFile(args[0]);
 		} else {
-			main.readInputFile("intrare.txt");
+			input=main.readInputFile("intrare.txt");
 		}
+		
+		NeuralNetwork net=new NeuralNetwork();
+		System.out.println(net.convertToDisplaySymbol(alphabet[6]).printSymbol());
+
+		// Testing
+		// DisplaySymbol d=new DisplaySymbol();
+		// d.values=new char[] {1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1};
+		// d.values=new char[] {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0};
+		// System.out.println(d.printSymbol());
 	}
 }
