@@ -18,7 +18,7 @@ public class Main {
 	private static final Logger log = Logger.getLogger(Main.class);
 
 	public static OpticalSymbol[] readInputFile(String filename) throws FileNotFoundException {
-		log.info("Reading input file: " + filename);
+		log.info("Reading input file: " + filename+" ...");
 		Scanner in = new Scanner(new File(filename));
 
 		OpticalSymbol[] symbols = new OpticalSymbol[SYMBOLS_PER_WORD];
@@ -50,7 +50,7 @@ public class Main {
 	}
 
 	public static OpticalSymbol[] readConfigFile(String filename) throws FileNotFoundException {
-		log.info("Reading config file: " + filename);
+		log.info("Reading config file: " + filename+" ...");
 		Scanner in = new Scanner(new File(filename));
 		SYMBOLS_PER_WORD = in.nextInt();
 		SYMBOL_COUNT = in.nextInt();
@@ -122,7 +122,12 @@ public class Main {
 		}
 		
 		NeuralNetwork net=new NeuralNetwork();
-		System.out.println(net.convertToDisplaySymbol(alphabet[5]).printSymbol());
+		//Train the network
+		net.trainNetwork(alphabet);
+		
+		//Use the network	
+		OpticalSymbol cl=net.classifySymbol(input[2]);
+		System.out.println(net.convertToDisplaySymbol(input[0]).printSymbol());
 
 		// Testing
 		// DisplaySymbol d=new DisplaySymbol();

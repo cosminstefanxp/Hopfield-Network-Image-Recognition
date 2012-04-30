@@ -1,8 +1,10 @@
 package ml.t3;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
@@ -52,6 +54,7 @@ public class NeuralNetwork {
 	public NeuralNetwork() {
 		super();
 		initOutputLayer();
+		log.setLevel(Level.DEBUG);
 	}
 
 	/**
@@ -75,6 +78,7 @@ public class NeuralNetwork {
 	 * @param trainData the train data
 	 */
 	public void trainNetwork(OpticalSymbol trainData[]) {
+		log.info("Training Hopfield Network on the alphabet...");
 		for (int i = 0; i < T_SIZE; i++)
 			for (int j = 0; j < T_SIZE; j++) {
 
@@ -86,15 +90,17 @@ public class NeuralNetwork {
 				} else
 					w[i][j] = 0.0d;
 			}
+		log.info("Training complete.");
 	}
 
 	/**
 	 * Classifies an Optical Symbol and converts it to one of the original symbols from the
 	 * alphabet. This is the Hopfield Network classification.
-	 * 
-	 * @param x the x
+	 *
+	 * @param input the input
+	 * @return the optical symbol that the input resembles the most, from the alphabet
 	 */
-	public void classifySymbol(OpticalSymbol x) {
+	public OpticalSymbol classifySymbol(OpticalSymbol input) {
 		int oldValue = 0;
 		int neuron;
 		// Modifiable neurons - neurons which are not yet stable in the current epoch
@@ -103,7 +109,13 @@ public class NeuralNetwork {
 		unstabilizedNeurons.clear();
 		for (int i = 0; i < T_SIZE; i++)
 			unstabilizedNeurons.add(i);
-
+		//Make a copy of the neuron
+		OpticalSymbol x=new OpticalSymbol();
+		x.data=Arrays.copyOf(input.data, input.data.length);
+		
+		log.info("Classifying input symbol using Hopfield Network...");
+		log.debug("Input symbol: "+x);
+		
 		// Until the network has stabilized
 		while (!unstabilizedNeurons.isEmpty()) {
 			// Pick an unstabilized neuron
@@ -128,6 +140,10 @@ public class NeuralNetwork {
 					unstabilizedNeurons.add(i);
 			}
 		}
+		log.info("Classification complete.");
+		log.debug("Classified as: "+x);
+		
+		return x;
 	}
 
 }
