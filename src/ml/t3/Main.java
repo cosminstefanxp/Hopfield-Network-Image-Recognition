@@ -1,7 +1,17 @@
+/*
+ * Invatare Automata 
+ * Tema 3
+ * 
+ * Stefan-Dobrin Cosmin
+ * 342C4
+ */
 package ml.t3;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -30,6 +40,7 @@ public class Main {
 		// Read a new line
 		for (int i = 0; i < OpticalSymbol.SYMBOL_HEIGHT; i++) {
 			String line = in.nextLine();
+			log.debug(line);
 			// Read a new chunk of symbol
 			for (int s = 0; s < SYMBOLS_PER_WORD; s++)
 				for (int j = 0; j < OpticalSymbol.SYMBOL_WIDTH; j++)
@@ -94,10 +105,10 @@ public class Main {
 		PatternLayout patternLayout = new PatternLayout("%-3r [%-5p] %c - %m%n");
 		ConsoleAppender appender = new ConsoleAppender(patternLayout);
 		Logger.getRootLogger().addAppender(appender);
-		Logger.getRootLogger().setLevel(Level.INFO);
+		Logger.getRootLogger().setLevel(Level.ERROR);
 	}
 
-	public static void main(String args[]) throws FileNotFoundException {
+	public static void main(String args[]) throws IOException {
 		configureLogger();
 		OpticalSymbol input[];
 		OpticalSymbol alphabet[];
@@ -121,18 +132,29 @@ public class Main {
 			input=Main.readInputFile("intrare.txt");
 		}
 		
-		NeuralNetwork net=new NeuralNetwork();
-		//Train the network
+		//Train the neural network
+		NeuralNetwork net=new NeuralNetwork();		
 		net.trainNetwork(alphabet);
 		
 		//Use the network	
-		OpticalSymbol cl=net.classifySymbol(input[0]);
-		System.out.println(net.convertToDisplaySymbol(cl).printSymbol());
-
-		// Testing
-		// DisplaySymbol d=new DisplaySymbol();
-		// d.values=new char[] {1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1};
-		// d.values=new char[] {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0};
-		// System.out.println(d.printSymbol());
+		DisplaySymbol ds[]=new DisplaySymbol[SYMBOLS_PER_WORD];
+		String outS="";
+		for(int i=0;i<SYMBOLS_PER_WORD;i++)
+		{
+			ds[i]=net.processSymbol(input[i]);
+			outS+=ds[i].toString();
+		}
+		
+		//Write the results to console
+		System.out.println(outS);
+		for(int i=0;i<SYMBOLS_PER_WORD;i++)
+			System.out.println(ds[i].printSymbol());
+		
+		//Write the results to file
+		BufferedWriter out=new BufferedWriter(new FileWriter("iesire.txt"));
+		out.write(outS);
+		out.close();
+		
+		
 	}
 }

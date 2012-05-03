@@ -1,4 +1,12 @@
+/*
+ * Invatare Automata 
+ * Tema 3
+ * 
+ * Stefan-Dobrin Cosmin
+ * 342C4
+ */
 package ml.t3;
+
 
 /**
  * A DisplaySymbol that contains 14 values, corresponding to the 14 display positions on
@@ -110,5 +118,20 @@ public class DisplaySymbol {
 
 		return out.toString();
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		String val="";
+		
+		for(int i=0;i<14;i++)
+			val+=(int)values[i]+" ";
+		
+		return val;
+	}
+	
+	
 
 }

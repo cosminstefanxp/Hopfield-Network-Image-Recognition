@@ -1,10 +1,16 @@
+/*
+ * Invatare Automata 
+ * Tema 3
+ * 
+ * Stefan-Dobrin Cosmin
+ * 342C4
+ */
 package ml.t3;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
@@ -25,8 +31,10 @@ import org.apache.log4j.Logger;
  */
 public class NeuralNetwork {
 
+	private static final double GAP_VALUE = 100;
+
 	/** The output layer. */
-	private Perceptron outputLayer[] = new Perceptron[14];
+	private SimpleNeuron outputLayer[] = new SimpleNeuron[14];
 
 	/** The Constant log. */
 	private static final Logger log = Logger.getLogger(NeuralNetwork.class);
@@ -44,10 +52,10 @@ public class NeuralNetwork {
 	 * Inits the output layer.
 	 */
 	private void initOutputLayer() {
-		this.outputLayer = new Perceptron[14];
+		this.outputLayer = new SimpleNeuron[14];
 
 		for (int i = 0; i < 14; i++)
-			outputLayer[i] = new Perceptron(SymbolsVals.vals[i], SymbolsVals.thetas[i]);
+			outputLayer[i] = new SimpleNeuron(SymbolsVals.vals[i], SymbolsVals.thetas[i]);
 		log.info("Neural network output layer init complete!");
 	}
 
@@ -57,7 +65,7 @@ public class NeuralNetwork {
 	public NeuralNetwork() {
 		super();
 		initOutputLayer();
-		log.setLevel(Level.DEBUG);
+		// log.setLevel(Level.DEBUG);
 	}
 
 	/**
@@ -81,7 +89,7 @@ public class NeuralNetwork {
 	 * @param symb the symbol
 	 * @return the display symbol
 	 */
-	public DisplaySymbol convertToDisplaySymbol(OpticalSymbol symb) {
+	private DisplaySymbol convertToDisplaySymbol(OpticalSymbol symb) {
 		DisplaySymbol s = new DisplaySymbol();
 
 		for (int i = 0; i < 14; i++)
@@ -91,8 +99,13 @@ public class NeuralNetwork {
 	}
 
 	/**
-	 * Trains the Hopfield Network using a given OpticalSymbol Set - the alphabet.
+	 * Trains the Hopfield Network using a given OpticalSymbol Set - the alphabet. The algorithm
+	 * uses Widrow-Hoff rule for learning. It takes every input template and every neuron and
+	 * updates its weights so that the output is the proper one. <br/>
+	 * It only updates the weights if there are inputs for the neurons and tries to make a gap
+	 * between the "classes", not comparing to 0, but to a different value.
 	 * 
+	 * @see http://homepages.gold.ac.uk/nikolaev/311htn.htm
 	 * @param trainData the train data
 	 */
 	public void trainNetwork(OpticalSymbol trainData[]) {
@@ -102,7 +115,7 @@ public class NeuralNetwork {
 		Random rand = new Random();
 		for (int i = 0; i < NEURON_COUNT; i++)
 			for (int j = 0; j < NEURON_COUNT; j++)
-				w[i][j] = 0.45 + rand.nextFloat() / 100;
+				w[i][j] = 0.45 + rand.nextFloat() / 10;
 
 		int epoch = 1;
 		// Repeat until convergence
@@ -133,10 +146,10 @@ public class NeuralNetwork {
 					// If the ouput of the neuron is not ok, adjust the weights
 					// and force a bigger span between "classes"
 					Double variation = null;
-					if (val >= -100 && in.data[i] == 0)
-						variation = -(100.1 + val) / (double) nonNullPixels;
-					if (val < 100 && in.data[i] == 1)
-						variation = (100.1 - val) / (double) nonNullPixels;
+					if (val >= -GAP_VALUE && in.data[i] == 0)
+						variation = -(GAP_VALUE + 0.1 + val) / (double) nonNullPixels;
+					if (val < GAP_VALUE && in.data[i] == 1)
+						variation = (GAP_VALUE + 0.1 - val) / (double) nonNullPixels;
 
 					if (variation != null) {
 						allDone = false;
@@ -160,7 +173,7 @@ public class NeuralNetwork {
 	 * @param input the input
 	 * @return the optical symbol that the input resembles the most, from the alphabet
 	 */
-	public OpticalSymbol classifySymbol(OpticalSymbol input) {
+	private OpticalSymbol classifySymbol(OpticalSymbol input) {
 		int oldValue = 0;
 		int neuron;
 		// Modifiable neurons - neurons which are not yet stable in the current epoch
@@ -202,6 +215,14 @@ public class NeuralNetwork {
 		log.debug("Classified as: " + x);
 
 		return x;
+	}
+	
+	public DisplaySymbol processSymbol(OpticalSymbol symbol)
+	{
+		//The Hopfield Network Processing
+		OpticalSymbol classified=classifySymbol(symbol);
+		//The output layer processing
+		return convertToDisplaySymbol(classified);
 	}
 
 }

@@ -1,2 +1,0 @@
-Hopfield-Network-Image-Recognition
-==================================

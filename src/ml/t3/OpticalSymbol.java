@@ -1,3 +1,10 @@
+/*
+ * Invatare Automata 
+ * Tema 3
+ * 
+ * Stefan-Dobrin Cosmin
+ * 342C4
+ */
 package ml.t3;
 
 

@@ -1,0 +1,43 @@
+Invatare Automata
+Tema 3 
+
+Stefan-Dobrin Cosmin
+342C4
+
+
+Mentiuni generale
+=================
+Tema a fost implementata in Java, folosind ca IDE (pentru dezvoltare si pentru rulare) Eclipse. In dezvoltare pe langa librariile default din cadrul Java 1.7, am folosit log4j pentru a imi usura dezvoltarea pe partea de logging. Nivelul de logging curent poate fi setat in Main -> configureLogger.
+
+Executabilului accepta parametrii ca in cerinta, putand fii date optional numele fisierelor de intrare sau configurare. Altfel se foloses intrare.txt si config.txt.
+Un exemplu de executie poate fi: java ml.t3.Main intrare.txt config.txt
+
+De asemenea, tema este insotita de un script ant de compilare si rulare. Se pot folosi targeturile build si run.
+
+Mentiuni Implementare
+=====================
+Voi mentiona cele mai importante aspecte din algoritmul folosit in cadrul temei:
+ * Reteaua neurala este implementata in clasa NeuralNetwork si contine atat partea de retea Hopfield cat si stratul de iesire pentru transformarea din simbolurile 30x20 in 14 elemente.
+ * Dupa citirea datelor, algoritmul foloseste simbolurile din alfabet pentru antrenarea retelei Hopfield.
+ * Dupa antrenare, reteaua poate fi folosita pentru clasificarea simbolurilor si obtinerea celor 14 semnale de iesire asociate afisajului cu 14 elemente.
+ * In implementare, simbolurile sunt tinute in obiectele de tipul:
+ 	o OpticalSymbol - un simbol intreg, de dimensiuni 30x20, cu valori 0 si 1. 
+ 	o DisplaySymbol - un simbol afisabil, avand doar cele 14 semnale, corespunzatoare celor 14 elemente. Este construit de stratul de iesire din reteaua neuronala.
+ * pentru antrenarea retelei Hopfield, dupa nenumarate implementari de algoritmi, am obtinut rezultatele satisfacatoare folosind "Widrow-Hoff rule". Pasii folositi sunt:
+ 	o initializezi ponderile cu valori aleatoare dar mici
+ 	o pana la stabilizare
+ 		o pentru fiecare exemplu de intrare (template) si pentru fiecare neuron
+ 			o calculez iesirea neuronului
+ 			o daca iesirea nu este corespunzatoare actualizez ponderile astfel incat sa fie corespunzatoare.
+ 	De asemenea, am folosit inca 2 imbunatatiri si anume:
+ 		o actualizez ponderile doar pentru intrarile pentru care, in template, avem valoare 1, ponderile asociate intrarilor de tip 0 oricum nefiind folosite
+ 		o incerc sa creez o zona mai mare de separatie intre cele doua clase (0 si 1), pentru rezultate mai bune la clasificare
+ * pentru clasificare folosind Hopfield, algoritmul este cel prezentat in laborator, avand o functie de activare liniara cu prag 0.
+ * pentru stratul de iesire am folosit 14 neuroni, fiecare avand ca intrari toti pixelii din imagine. Ponderile sunt calculare manual iar valorile de prag sunt corespunzatoare (se gasesc in fisierul SymbolsVals). Practic, fiecare neuron este asociat unui element de pe display si va numara cati din pixelii care ar fi trebuit sa fie 1 sunt activati.
+
+Alte mentiuni
+============
+In arhiva includ si 2 seturi de fisiere de intrare, folosite pentru testare. Unul este setul default, celalalt are inca 1 simbol la intrare si mai mult zgomot.
+Pentru orice alte nedumeriri legate de algoritmul folosit, se pot folosi comentariile din aplicatie, avand asociata chiar si documentatie JavaDoc pentru obiecte/metode. 
+ 		
+  
