@@ -32,10 +32,13 @@ public class NeuralNetwork {
 	private static final Logger log = Logger.getLogger(NeuralNetwork.class);
 
 	/** The Constant T_SIZE. */
-	public static final int T_SIZE = OpticalSymbol.SYMBOL_HEIGHT * OpticalSymbol.SYMBOL_WIDTH;
+	public static final int NEURON_COUNT = OpticalSymbol.SYMBOL_HEIGHT * OpticalSymbol.SYMBOL_WIDTH;
 
-	/** The neuron weights. */
-	double w[][] = new double[T_SIZE][T_SIZE];
+	/**
+	 * The neuron weights. w[i][j] - the weight for the i'th neuron and its j'th input ~ the input
+	 * from the jth neuron to the ith neuron.
+	 */
+	double w[][] = new double[NEURON_COUNT][NEURON_COUNT];
 
 	/**
 	 * Inits the output layer.
@@ -56,19 +59,18 @@ public class NeuralNetwork {
 		initOutputLayer();
 		log.setLevel(Level.DEBUG);
 	}
-	
+
 	/**
 	 * Gets the neuron output.
-	 *
+	 * 
 	 * @param n the n
 	 * @param x the x
 	 * @return the neuron output
 	 */
-	private double getNeuronOutput(int n, OpticalSymbol x)
-	{
+	private double getNeuronOutput(int n, OpticalSymbol x) {
 		// Compute the new neuron output
 		double val = 0;
-		for (int j = 0; j < T_SIZE; j++)
+		for (int j = 0; j < NEURON_COUNT; j++)
 			val += w[n][j] * x.data[j];
 		return val;
 	}
@@ -95,22 +97,58 @@ public class NeuralNetwork {
 	 */
 	public void trainNetwork(OpticalSymbol trainData[]) {
 		log.info("Training Hopfield Network on the alphabet...");
-		
-		//For every neuron 
-		for (int i = 0; i < T_SIZE; i++)
-		{
-			//Compute the output value
-			//double val=getNeuronOutput(i, trainData)
-			for (int j = 0; j < T_SIZE; j++) {
 
-				if (i != j) {
-					w[i][j] = 0.0d;
-					for (int s = 0; s < trainData.length; s++)
-						w[i][j] += trainData[s].data[i] * trainData[s].data[j];
-					w[i][j] /= T_SIZE;
-				} else
-					w[i][j] = 0.0d;
+		// Initialize the weights
+		Random rand = new Random();
+		for (int i = 0; i < NEURON_COUNT; i++)
+			for (int j = 0; j < NEURON_COUNT; j++)
+				w[i][j] = 0.45 + rand.nextFloat() / 100;
+
+		int epoch = 1;
+		// Repeat until convergence
+		boolean allDone = false;
+		while (!allDone) {
+			allDone = true;
+			log.info("Epoch " + epoch++);
+
+			// For every input example
+			for (int ind = 0; ind < trainData.length; ind++) {
+				log.debug("Processing training example " + ind);
+
+				OpticalSymbol in = trainData[ind];
+
+				// Compute number of non-null pixels
+				int nonNullPixels = 0;
+				for (int i = 0; i < in.data.length; i++)
+					if (in.data[i] == 1)
+						nonNullPixels++;
+
+				// For every neuron
+				for (int i = 0; i < NEURON_COUNT; i++) {
+					// Compute the output value
+					double val = 0;
+					for (int j = 0; j < NEURON_COUNT; j++)
+						val += w[i][j] * in.data[j];
+
+					// If the ouput of the neuron is not ok, adjust the weights
+					// and force a bigger span between "classes"
+					Double variation = null;
+					if (val >= -100 && in.data[i] == 0)
+						variation = -(100.1 + val) / (double) nonNullPixels;
+					if (val < 100 && in.data[i] == 1)
+						variation = (100.1 - val) / (double) nonNullPixels;
+
+					if (variation != null) {
+						allDone = false;
+						for (int j1 = 0; j1 < NEURON_COUNT; j1++)
+							if (in.data[j1] == 1)
+								w[i][j1] += variation;
+					}
+
+				}
+
 			}
+
 		}
 		log.info("Training complete.");
 	}
@@ -118,7 +156,7 @@ public class NeuralNetwork {
 	/**
 	 * Classifies an Optical Symbol and converts it to one of the original symbols from the
 	 * alphabet. This is the Hopfield Network classification.
-	 *
+	 * 
 	 * @param input the input
 	 * @return the optical symbol that the input resembles the most, from the alphabet
 	 */
@@ -129,15 +167,15 @@ public class NeuralNetwork {
 		ArrayList<Integer> unstabilizedNeurons = new ArrayList<Integer>();
 		// Initialize the unstable neurons
 		unstabilizedNeurons.clear();
-		for (int i = 0; i < T_SIZE; i++)
+		for (int i = 0; i < NEURON_COUNT; i++)
 			unstabilizedNeurons.add(i);
-		//Make a copy of the neuron
-		OpticalSymbol x=new OpticalSymbol();
-		x.data=Arrays.copyOf(input.data, input.data.length);
-		
+		// Make a copy of the neuron
+		OpticalSymbol x = new OpticalSymbol();
+		x.data = Arrays.copyOf(input.data, input.data.length);
+
 		log.info("Classifying input symbol using Hopfield Network...");
-		log.debug("Input symbol: "+x);
-		
+		log.debug("Input symbol: " + x);
+
 		// Until the network has stabilized
 		while (!unstabilizedNeurons.isEmpty()) {
 			// Pick an unstabilized neuron
@@ -145,9 +183,7 @@ public class NeuralNetwork {
 			oldValue = x.data[neuron];
 
 			// Compute the new neuron output
-			double val = 0;
-			for (int j = 0; j < T_SIZE; j++)
-				val += w[neuron][j] * x.data[j];
+			double val = getNeuronOutput(neuron, x);
 			if (val > 0)
 				x.data[neuron] = 1;
 			else
@@ -158,13 +194,13 @@ public class NeuralNetwork {
 				unstabilizedNeurons.remove((Integer) neuron);
 			else {
 				unstabilizedNeurons.clear();
-				for (int i = 0; i < T_SIZE; i++)
+				for (int i = 0; i < NEURON_COUNT; i++)
 					unstabilizedNeurons.add(i);
 			}
 		}
 		log.info("Classification complete.");
-		log.debug("Classified as: "+x);
-		
+		log.debug("Classified as: " + x);
+
 		return x;
 	}
 

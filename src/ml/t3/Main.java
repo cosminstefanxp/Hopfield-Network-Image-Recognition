@@ -126,8 +126,8 @@ public class Main {
 		net.trainNetwork(alphabet);
 		
 		//Use the network	
-		OpticalSymbol cl=net.classifySymbol(input[2]);
-		System.out.println(net.convertToDisplaySymbol(input[0]).printSymbol());
+		OpticalSymbol cl=net.classifySymbol(input[0]);
+		System.out.println(net.convertToDisplaySymbol(cl).printSymbol());
 
 		// Testing
 		// DisplaySymbol d=new DisplaySymbol();
